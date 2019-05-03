@@ -273,6 +273,18 @@ namespace Utils
 		return game_mode->GetInt() == 0 && game_type->GetInt() == 6;
 	}
 
+	void EventLog(std::string message, Color messageColor, bool console, std::string consolePrefix, Color consoleColor)
+	{
+		Logger::Get().add(message, messageColor);
+
+		if (console)
+		{
+			g_CVar->ConsoleColorPrintf(consoleColor, consolePrefix.c_str());
+			g_CVar->ConsoleColorPrintf(messageColor, message.c_str());
+			g_CVar->ConsoleColorPrintf(messageColor, "\n");
+		}
+	}
+
 	void SetClantag(const char *tag)
 	{
 		FUNCTION_GUARD;

@@ -6,6 +6,8 @@
 
 #include "../Options.hpp"
 
+#include <algorithm>
+
 void PlayerHurtEvent::FireGameEvent(IGameEvent *event)
 {
 	if (!g_LocalPlayer || !event)
@@ -58,7 +60,6 @@ void PlayerHurtEvent::FireGameEvent(IGameEvent *event)
 			return "generic";
 		};
 
-		EventInfo info;
 		std::stringstream msg;
 
 		auto enemy = event->GetInt("userid");
@@ -80,25 +81,13 @@ void PlayerHurtEvent::FireGameEvent(IGameEvent *event)
 			if (attacker_index != g_EngineClient->GetLocalPlayer())
 				return;
 
-			info.m_flExpTime = g_GlobalVars->curtime + 4.f;
 			std::string szHitgroup = HitgroupToString(hitgroup);
+
 			msg << "Hit " << enemy_info.szName << " in the " << szHitgroup << " for " << dmg_to_health << " dmg " << "(" << remaining_health << " health remaining)";
-			info.m_szMessage = msg.str();
 
-			eventInfo.emplace_back(info);
-
-			g_CVar->ConsoleColorPrintf(Color(50, 122, 239), "[Gladiatorcheatz]");
-			g_CVar->ConsoleDPrintf(" ""Hit"" ");
-			g_CVar->ConsoleColorPrintf(Color(255, 255, 255), "%s", enemy_info.szName);
-			g_CVar->ConsoleColorPrintf(Color(255, 255, 255), " in the %s", szHitgroup.c_str());
-			g_CVar->ConsoleDPrintf(" ""for"" ");
-			g_CVar->ConsoleColorPrintf(Color(255, 255, 255), "%s dmg", dmg_to_health);
-			g_CVar->ConsoleColorPrintf(Color(255, 255, 255), " (%s health remaining)\n", remaining_health);
+			Utils::EventLog(msg.str());
 		}
 	}
-	else
-		if (eventInfo.size() > 0)
-			eventInfo.clear();
 
 	if (g_Options.hvh_resolver)
 	{
@@ -162,11 +151,6 @@ void PlayerHurtEvent::Paint(void)
 	if (width == 0 || height == 0)
 		g_EngineClient->GetScreenSize(width, height);
 
-	RECT scrn = Visuals::GetViewport();
-
-	if (eventInfo.size() > 15)
-		eventInfo.erase(eventInfo.begin() + 1);
-
 	float alpha = 0.f;
 
 	if (g_Options.visuals_others_hitmarker)
@@ -195,23 +179,6 @@ void PlayerHurtEvent::Paint(void)
 			g_VGuiSurface->DrawSetColor(Color(255, 255, 255, (int)(alpha * 255.f)));
 			g_VGuiSurface->DrawLine(width / 2 - lineSize / 2, height / 2 - lineSize / 2, width / 2 + lineSize / 2, height / 2 + lineSize / 2);
 			g_VGuiSurface->DrawLine(width / 2 + lineSize / 2, height / 2 - lineSize / 2, width / 2 - lineSize / 2, height / 2 + lineSize / 2);
-		}
-	}
-
-	if (g_Options.misc_logevents)
-	{
-		for (size_t i = 0; i < eventInfo.size(); i++)
-		{
-			float diff = eventInfo[i].m_flExpTime - g_GlobalVars->curtime;
-			if (eventInfo[i].m_flExpTime < g_GlobalVars->curtime)
-			{
-				eventInfo.erase(eventInfo.begin() + i);
-				continue;
-			}
-
-			alpha = 0.8f - diff / 0.8f;
-
-			Visuals::DrawString(5, 5, (scrn.top + 13) + (9.5 * i), Color(255, 255, 255), FONT_LEFT, eventInfo[i].m_szMessage.c_str());
 		}
 	}
 }

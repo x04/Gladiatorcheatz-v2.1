@@ -3,18 +3,14 @@
 #include "../interfaces/IGameEventmanager.hpp"
 #include "../Singleton.hpp"
 
+#include "../misc/Color.hpp"
+
 #include <vector>
 
 struct HitMarkerInfo
 {
 	float m_flExpTime;
 	int m_iDmg;
-};
-
-struct EventInfo
-{
-	std::string m_szMessage;
-	float m_flExpTime;
 };
 
 class PlayerHurtEvent : public IGameEventListener2, public Singleton<PlayerHurtEvent>
@@ -32,5 +28,4 @@ public:
 private:
 
 	std::vector<HitMarkerInfo> hitMarkerInfo;
-	std::vector<EventInfo> eventInfo;
 };
